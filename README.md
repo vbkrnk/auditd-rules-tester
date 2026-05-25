@@ -52,7 +52,7 @@ No hardcoded rule lists. The script tests **exactly what is loaded on your machi
 ### Installation
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/auditd-rules-tester.git
+git clone https://github.com/vbkrnk/auditd-rules-tester.git
 cd auditd-rules-tester
 chmod +x auditd_rules_tester_v2_en.sh
 ```
@@ -176,7 +176,7 @@ MIT License. See [LICENSE](LICENSE).
 ### Установка
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/auditd-rules-tester.git
+git clone https://github.com/vbkrnk/auditd-rules-tester.git
 cd auditd-rules-tester
 chmod +x auditd_rules_tester_v2_en.sh
 ```
