@@ -37,8 +37,8 @@ No hardcoded rule lists. The script tests **exactly what is loaded on your machi
 
 | Distribution | Versions |
 |---|---|
-| CentOS | 7, 8, 9 |
-| Oracle Linux | 7, 8, 9 |
+| CentOS | 8, 9 |
+| Oracle Linux | 8, 9 |
 | Ubuntu | 18.04, 20.04, 22.04, 24.04 |
 
 ### Requirements
@@ -161,8 +161,8 @@ MIT License. See [LICENSE](LICENSE).
 
 | Дистрибутив | Версии |
 |---|---|
-| CentOS | 7, 8, 9 |
-| Oracle Linux | 7, 8, 9 |
+| CentOS | 8, 9 |
+| Oracle Linux | 8, 9 |
 | Ubuntu | 18.04, 20.04, 22.04, 24.04 |
 
 ### Требования
