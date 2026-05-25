@@ -1,4 +1,4 @@
-# auditd Rules Testing Script by vbkrnk
+# auditd Rules Testing Script
 
 <div align="center">
 
