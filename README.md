@@ -54,13 +54,13 @@ No hardcoded rule lists. The script tests **exactly what is loaded on your machi
 ```bash
 git clone https://github.com/vbkrnk/auditd-rules-tester.git
 cd auditd-rules-tester
-chmod +x auditd_rules_tester_v2_en.sh
+chmod +x auditd_rules_tester.sh
 ```
 
 ### Usage
 
 ```bash
-sudo ./auditd_rules_tester_v2_en.sh
+sudo ./auditd_rules_tester.sh
 ```
 
 Report is saved in the current directory:
@@ -178,13 +178,13 @@ MIT License. See [LICENSE](LICENSE).
 ```bash
 git clone https://github.com/vbkrnk/auditd-rules-tester.git
 cd auditd-rules-tester
-chmod +x auditd_rules_tester_v2_en.sh
+chmod +x auditd_rules_tester.sh
 ```
 
 ### Запуск
 
 ```bash
-sudo ./auditd_rules_tester_v2_en.sh
+sudo ./auditd_rules_tester.sh
 ```
 
 Отчёт сохраняется в текущей директории:
