@@ -1,5 +1,3 @@
-# auditd-rules-tester
-Automated auditd rules validation tool
 # auditd Rules Testing Script by vbkrnk
 
 <div align="center">
