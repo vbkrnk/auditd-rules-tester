@@ -22,6 +22,9 @@ warn() { log "${YELLOW}[WARN]${NC} $1"; }
 err()  { log "${RED}[ERR]${NC} $1"; }
 step() { log "${CYAN}[....] $1${NC}"; }
 
+# ==============================================================================
+# PREREQUISITES
+# ==============================================================================
 check_prerequisites() {
     if [[ $EUID -ne 0 ]]; then
         err "This script must be run as root!"
@@ -42,6 +45,9 @@ check_prerequisites() {
     info "Prerequisites check passed."
 }
 
+# ==============================================================================
+# LOAD ACTIVE RULES FROM AUDITCTL
+# ==============================================================================
 load_active_rules() {
     info "Loading active rules via auditctl -l ..."
     auditctl -l 2>/dev/null | grep -v '^No rules' | grep -v '^List of rules' > "$RULES_FILE" || true
@@ -61,6 +67,9 @@ load_active_rules() {
     info "Rules loaded: $count"
 }
 
+# ==============================================================================
+# REPORT HELPERS
+# ==============================================================================
 write_report_header() {
     cat >> "$REPORT_FILE" << EOF
 ================================================================================
@@ -82,14 +91,30 @@ write_rule_result() {
         "$rule" "$log_line" >> "$REPORT_FILE"
 }
 
+# ==============================================================================
+# AUDIT LOG SEARCH
+# ==============================================================================
 get_audit_log_by_key() {
     local key="$1"
     local result=""
+    # Skip entire event blocks that belong to auditctl rule add/remove operations
     if command -v ausearch &>/dev/null; then
-        result=$(ausearch -k "$key" --start recent 2>/dev/null | grep -v '^----' | grep -Ev 'type=CONFIG_CHANGE|op=add_rule|op=remove_rule|exe="/usr/sbin/auditctl"' | tail -6 || true)
+        result=$(ausearch -k "$key" --start recent 2>/dev/null             | awk '
+                /^----/ {
+                    if (length(block)>0 && block !~ /type=CONFIG_CHANGE|op=add_rule|op=remove_rule|auditctl/)
+                        printf "%s", block
+                    block=""
+                    next
+                }
+                { block = block $0 "\n" }
+                END {
+                    if (length(block)>0 && block !~ /type=CONFIG_CHANGE|op=add_rule|op=remove_rule|auditctl/)
+                        printf "%s", block
+                }
+            '             | tail -8 || true)
     fi
     if [[ -z "$result" ]] && [[ -f /var/log/audit/audit.log ]]; then
-        result=$(grep "key=\"$key\"\\|key=$key" /var/log/audit/audit.log 2>/dev/null | grep -Ev 'type=CONFIG_CHANGE|op=add_rule|op=remove_rule|exe="/usr/sbin/auditctl"' | tail -3 || true)
+        result=$(grep "key=\"$key\"\\|key=$key" /var/log/audit/audit.log 2>/dev/null             | grep -Ev "type=CONFIG_CHANGE|op=add_rule|op=remove_rule|auditctl"             | tail -3 || true)
     fi
     if [[ -z "$result" ]]; then
         result="  [NO ENTRY IN AUDIT LOG — rule did not trigger or event was not generated]"
@@ -125,6 +150,9 @@ mark_acted() {
     echo "$1" >> "$ACTED_FILE"
 }
 
+# ==============================================================================
+# TRIGGER EVENT FOR A FILE PATH
+# ==============================================================================
 trigger_file_path() {
     local path="$1"
     local perm="$2"
@@ -156,6 +184,9 @@ trigger_file_path() {
     fi
 }
 
+# ==============================================================================
+# TRIGGER EVENT FOR SYSCALL RULES
+# ==============================================================================
 trigger_syscall() {
     local syscall="$1"
     local key="$2"
@@ -233,6 +264,9 @@ except: pass
     esac
 }
 
+# ==============================================================================
+# PARSE KEY FROM RULE (supports both -k <key> and -F key=<key>)
+# ==============================================================================
 parse_key() {
     local rule="$1"
     local key
@@ -241,6 +275,9 @@ parse_key() {
     echo "$key"
 }
 
+# ==============================================================================
+# PROCESS A SINGLE RULE LINE
+# ==============================================================================
 process_rule() {
     local rule="$1"
     local log_entry=""
@@ -250,6 +287,9 @@ process_rule() {
     [[ "$rule" =~ ^-[Dbe][[:space:]] ]] && return
     [[ "$rule" =~ ^-[Dbe]$ ]] && return
 
+    # ---------------------------------------------------------------
+    # WATCH RULE: -w <path> -p <perms> [-k <key>]
+    # ---------------------------------------------------------------
     if [[ "$rule" =~ ^-w[[:space:]] ]]; then
         local watch_path perm key
 
@@ -280,6 +320,9 @@ process_rule() {
         return
     fi
 
+    # ---------------------------------------------------------------
+    # SYSCALL RULE: -a <action>,<list> -S <syscalls> [-F ...] [-k <key>]
+    # ---------------------------------------------------------------
     if [[ "$rule" =~ ^-a[[:space:]] ]]; then
         local action syscalls key path_filter perm_filter extra_filters
 
@@ -329,10 +372,13 @@ process_rule() {
     write_rule_result "$rule" "  [RULE TYPE NOT RECOGNIZED — skipped]"
 }
 
+# ==============================================================================
+# MAIN
+# ==============================================================================
 main() {
     echo ""
     echo "╔══════════════════════════════════════════════════════════╗"
-    echo "║     auditd Rules Testing Script by vbkrnk  v2.0          ║"
+    echo "║     auditd Rules Testing Script by vbkrnk  v2.0         ║"
     echo "╚══════════════════════════════════════════════════════════╝"
     echo ""
 
